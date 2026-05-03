@@ -250,7 +250,7 @@
 
             try {
                 // Update: Target the API Subdomain via Cloudflare Tunnel
-                const res = await fetch('https://api.vid.neopix.in/api/stats');
+                const res = await fetch('https://apivid.neopix.in/api/stats');
                 if (!res.ok) throw new Error("Server not responding correctly.");
                 const data = await res.json();
                 
@@ -340,7 +340,7 @@
             
             try {
                 // Update: Target the API Subdomain via Cloudflare Tunnel
-                const response = await fetch('https://api.vid.neopix.in/api/extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: urlInput }) });
+                const response = await fetch('https://apivid.neopix.in/api/extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: urlInput }) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || "Extraction failed.");
                 
