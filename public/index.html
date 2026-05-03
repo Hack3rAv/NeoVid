@@ -13,6 +13,7 @@
             --glass-border: rgba(255, 255, 255, 0.05);
             --neon-primary: #00f3ff;
             --neon-secondary: #8b5cf6; 
+            --neon-error: #ef4444;
             --text-main: #ffffff;
             --text-muted: #8892b0;
         }
@@ -44,53 +45,53 @@
             font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; 
             margin-top: 6px; letter-spacing: 1px;
         }
-        .powered-by a {
-            color: var(--neon-secondary); text-decoration: none; font-weight: bold;
-            transition: color 0.3s, text-shadow 0.3s;
-        }
-        .powered-by a:hover {
-            color: var(--neon-primary); text-shadow: 0 0 10px var(--neon-primary);
-        }
+        .powered-by a { color: var(--neon-secondary); text-decoration: none; font-weight: bold; transition: color 0.3s, text-shadow 0.3s; }
+        .powered-by a:hover { color: var(--neon-primary); text-shadow: 0 0 10px var(--neon-primary); }
 
-        .system-status { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--neon-primary); display: flex; align-items: center; gap: 8px; background: rgba(0, 243, 255, 0.1); padding: 6px 12px; border-radius: 50px; border: 1px solid rgba(0, 243, 255, 0.2); }
-        .status-dot { width: 6px; height: 6px; background-color: var(--neon-primary); border-radius: 50%; box-shadow: 0 0 8px var(--neon-primary); animation: blink 1.5s infinite; }
+        /* --- DYNAMIC SYSTEM STATUS --- */
+        .system-status { 
+            font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; display: flex; align-items: center; gap: 8px; 
+            padding: 6px 12px; border-radius: 50px; transition: all 0.3s ease;
+        }
+        /* Default state: Checking */
+        .system-status.checking { color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .status-dot.checking { background-color: #f59e0b; box-shadow: 0 0 8px #f59e0b; animation: blink 1s infinite; }
+        
+        /* Online State */
+        .system-status.online { color: var(--neon-primary); background: rgba(0, 243, 255, 0.1); border: 1px solid rgba(0, 243, 255, 0.2); }
+        .status-dot.online { background-color: var(--neon-primary); box-shadow: 0 0 8px var(--neon-primary); animation: blink 1.5s infinite; }
+        
+        /* Offline State */
+        .system-status.offline { color: var(--neon-error); background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .status-dot.offline { background-color: var(--neon-error); box-shadow: 0 0 8px var(--neon-error); animation: none; }
+        
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
         /* --- INPUT ZONE --- */
         .input-zone { position: relative; padding: 3rem 2rem; text-align: center; border-radius: 16px; overflow: hidden; transform: translateZ(0); }
         .input-zone::before { content: ''; position: absolute; top: -100%; left: -100%; width: 300%; height: 300%; background: conic-gradient(from 90deg, transparent 0%, transparent 60%, var(--neon-secondary) 80%, var(--neon-primary) 100%); animation: spinBorder 3s linear infinite; z-index: 0; }
+        .input-zone.offline-mode::before { background: conic-gradient(from 90deg, transparent 0%, transparent 60%, #555 80%, #333 100%); animation-duration: 10s; }
         .input-zone::after { content: ''; position: absolute; inset: 2px; background: #09090b; border-radius: 14px; z-index: 1; }
         .input-content { position: relative; z-index: 2; }
         @keyframes spinBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- NEW INPUT GROUP FOR PASTE SVG BUTTON --- */
-        .input-group {
-            display: flex; align-items: center; background: #13131a; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px; margin-bottom: 20px; transition: border 0.3s, box-shadow 0.3s;
-        }
+        .input-group { display: flex; align-items: center; background: #13131a; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 20px; transition: border 0.3s, box-shadow 0.3s; }
         .input-group:focus-within { border-color: var(--neon-primary); box-shadow: 0 0 15px rgba(0,243,255,0.2); }
+        .input-group.disabled-group { opacity: 0.5; cursor: not-allowed; border-color: rgba(255,255,255,0.05); }
         
-        input[type="url"] {
-            flex-grow: 1; background: transparent; border: none; color: white; 
-            padding: 15px 15px 15px 25px; font-family: 'JetBrains Mono', monospace; 
-            font-size: 14px; text-align: center; outline: none; 
-        }
+        input[type="url"] { flex-grow: 1; background: transparent; border: none; color: white; padding: 15px 15px 15px 25px; font-family: 'JetBrains Mono', monospace; font-size: 14px; text-align: center; outline: none; }
+        input[type="url"]:disabled { cursor: not-allowed; color: #555; }
 
-        #pasteBtn {
-            background: transparent; color: var(--text-muted); border: none;
-            padding: 0 20px 0 10px; cursor: pointer; transition: all 0.3s ease;
-            box-shadow: none; width: auto; display: flex; align-items: center; justify-content: center;
-        }
-        #pasteBtn:hover {
-            color: var(--neon-primary); transform: scale(1.1); background: transparent; box-shadow: none;
-        }
+        #pasteBtn { background: transparent; color: var(--text-muted); border: none; padding: 0 20px 0 10px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+        #pasteBtn:hover:not(:disabled) { color: var(--neon-primary); transform: scale(1.1); }
         #pasteBtn svg { filter: drop-shadow(0 0 0 transparent); transition: filter 0.3s; }
-        #pasteBtn:hover svg { filter: drop-shadow(0 0 8px var(--neon-primary)); }
+        #pasteBtn:hover:not(:disabled) svg { filter: drop-shadow(0 0 8px var(--neon-primary)); }
+        #pasteBtn:disabled { cursor: not-allowed; }
 
-        /* Extract Button */
         #extractBtn { width: 100%; background-color: var(--neon-primary); color: #000; border: none; padding: 12px 30px; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 2px; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: all 0.3s ease; }
-        #extractBtn:hover { background-color: #fff; box-shadow: 0 0 20px var(--neon-primary); transform: translateY(-2px); }
-        #extractBtn:disabled { background-color: #333; color: #666; cursor: not-allowed; box-shadow: none; transform: none; }
+        #extractBtn:hover:not(:disabled) { background-color: #fff; box-shadow: 0 0 20px var(--neon-primary); transform: translateY(-2px); }
+        #extractBtn:disabled { background-color: #222; color: #555; cursor: not-allowed; box-shadow: none; transform: none; }
 
         /* --- PROGRESS BAR UI --- */
         .progress-wrapper { margin-top: 2rem; display: none; opacity: 0; transition: opacity 0.3s ease; }
@@ -105,20 +106,8 @@
         .info-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
 
         /* --- NEOVID CYBER-FADE STICKY FOOTER --- */
-        .sticky-counter {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(8, 8, 10, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(0, 243, 255, 0.3);
-            box-shadow: 0 -30px 60px rgba(0, 0, 0, 1), 0 -10px 40px rgba(0, 243, 255, 0.1);
-            padding: 25px; text-align: center; z-index: 100;
-        }
-
-        .sticky-counter::before {
-            content: ""; position: absolute; bottom: 100%; left: 0; width: 100%; height: 80px;
-            background: linear-gradient(to top, rgba(10, 10, 15, 1) 0%, rgba(10, 10, 15, 0.3) 60%, rgba(10, 10, 15, 0) 100%);
-            pointer-events: none;
-        }
-
+        .sticky-counter { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(8, 8, 10, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-top: 1px solid rgba(0, 243, 255, 0.3); box-shadow: 0 -30px 60px rgba(0, 0, 0, 1), 0 -10px 40px rgba(0, 243, 255, 0.1); padding: 25px; text-align: center; z-index: 100; }
+        .sticky-counter::before { content: ""; position: absolute; bottom: 100%; left: 0; width: 100%; height: 80px; background: linear-gradient(to top, rgba(10, 10, 15, 1) 0%, rgba(10, 10, 15, 0.3) 60%, rgba(10, 10, 15, 0) 100%); pointer-events: none; }
         .counter-text { font-family: 'Space Grotesk', sans-serif; font-size: 1rem; color: var(--text-main); font-weight: 500; letter-spacing: 1px; }
         .counter-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-right: 8px;}
         .counter-number { color: var(--neon-primary); font-size: 1.6rem; font-weight: 900; text-shadow: 0 0 15px var(--neon-primary); font-family: 'JetBrains Mono', monospace; }
@@ -129,20 +118,16 @@
         @media (max-width: 768px) {
             body { padding-top: 20px; padding-bottom: 160px; }
             .app-container { padding: 1.5rem; border-radius: 16px; }
-            
             .header { margin-bottom: 1.5rem; flex-direction: column; gap: 15px; text-align: center; }
             .header-titles { align-items: center; }
             h1 { font-size: 1.3rem; letter-spacing: 4px; }
             .system-status { font-size: 0.65rem; padding: 4px 10px; }
-
             .input-zone { padding: 2rem 1rem; }
             input[type="url"] { font-size: 13px; padding: 12px 10px 12px 15px; }
             #extractBtn { font-size: 14px; padding: 10px 20px; }
-
             .info-grid { grid-template-columns: 1fr; gap: 15px; }
             .info-card { padding: 15px; }
             .info-card p { font-size: 0.8rem; }
-
             .sticky-counter { padding: 20px 15px; }
             .counter-number { font-size: 1.3rem; }
             .counter-label, .counter-unit, .counter-suffix { font-size: 0.75rem; }
@@ -163,16 +148,16 @@
                 <h1>NEOVID</h1>
                 <div class="powered-by">Powered by <a href="https://neopix.in" target="_blank">Neopix</a></div>
             </div>
-            <div class="system-status">
-                <div class="status-dot"></div>
-                SYSTEM ONLINE
+            <!-- DYNAMIC STATUS BADGE -->
+            <div class="system-status checking" id="systemBadge">
+                <div class="status-dot checking" id="systemDot"></div>
+                <span id="systemText">CHECKING...</span>
             </div>
         </div>
         
-        <div class="input-zone">
+        <div class="input-zone" id="inputZone">
             <div class="input-content">
-                <!-- NEW INPUT GROUP WITH SVG PASTE BUTTON -->
-                <div class="input-group">
+                <div class="input-group" id="inputGroup">
                     <input type="url" id="videoUrl" placeholder="> TARGET URL <" required>
                     <button type="button" id="pasteBtn" onclick="pasteFromClipboard()" title="Paste Link">
                         <!-- Clipboard SVG -->
@@ -219,59 +204,93 @@
     </div>
 
     <script>
-        // --- SVG HTML STRINGS FOR TRANSITIONS ---
         const clipboardSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>`;
         const checkSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
 
-        // --- NEW SVG PASTE FUNCTION ---
         async function pasteFromClipboard() {
             try {
                 const text = await navigator.clipboard.readText();
                 if (text) {
                     document.getElementById('videoUrl').value = text;
-                    
-                    // Visual feedback effect on the SVG button
                     const btn = document.getElementById('pasteBtn');
                     btn.innerHTML = checkSVG;
                     btn.style.color = "var(--neon-primary)";
-                    
                     setTimeout(() => {
                         btn.innerHTML = clipboardSVG;
                         btn.style.color = "var(--text-muted)";
                     }, 1000);
                 }
             } catch (err) {
-                console.error('Failed to read clipboard contents: ', err);
+                console.error('Failed to read clipboard: ', err);
                 alert("Browser blocked clipboard access. Please paste manually (Ctrl+V).");
             }
         }
 
-        // Fetch the database counter on page load
-        async function loadStats() {
+        // --- STRICT URL VALIDATOR ---
+        function isValidUrl(string) {
             try {
-                const res = await fetch('http://localhost:3000/api/stats');
+                // This guarantees the string is a properly formatted URL
+                const newUrl = new URL(string);
+                return newUrl.protocol === 'http:' || newUrl.protocol === 'https:';
+            } catch (err) {
+                return false;
+            }
+        }
+
+        // --- HEALTH CHECK & STATS LOADER ---
+        async function loadStats() {
+            const badge = document.getElementById('systemBadge');
+            const dot = document.getElementById('systemDot');
+            const text = document.getElementById('systemText');
+            const urlInput = document.getElementById('videoUrl');
+            const pasteBtn = document.getElementById('pasteBtn');
+            const extractBtn = document.getElementById('extractBtn');
+            const inputGroup = document.getElementById('inputGroup');
+            const inputZone = document.getElementById('inputZone');
+
+            try {
+                // Update: Target the API Subdomain via Cloudflare Tunnel
+                const res = await fetch('https://api.vid.neopix.in/api/stats');
+                if (!res.ok) throw new Error("Server not responding correctly.");
                 const data = await res.json();
                 
+                // If successful, set UI to ONLINE
+                badge.className = "system-status online";
+                dot.className = "status-dot online";
+                text.innerText = "SYSTEM ONLINE";
+
+                // Update Counters
                 const totalMinutes = data.totalMinutes || 0;
                 const valueEl = document.getElementById('globalCounterValue');
                 const unitEl = document.getElementById('globalCounterUnit');
 
                 if (totalMinutes < 1) {
-                    valueEl.innerText = "0";
-                    unitEl.innerText = "Minutes";
+                    valueEl.innerText = "0"; unitEl.innerText = "Minutes";
                 } else if (totalMinutes === 1) {
-                    valueEl.innerText = "1";
-                    unitEl.innerText = "Minute";
+                    valueEl.innerText = "1"; unitEl.innerText = "Minute";
                 } else if (totalMinutes < 60) {
-                    valueEl.innerText = totalMinutes;
-                    unitEl.innerText = "Minutes";
+                    valueEl.innerText = totalMinutes; unitEl.innerText = "Minutes";
                 } else {
                     const totalHours = (totalMinutes / 60).toFixed(1);
-                    valueEl.innerText = totalHours;
-                    unitEl.innerText = (totalHours == 1.0) ? "Hour" : "Hours";
+                    valueEl.innerText = totalHours; unitEl.innerText = (totalHours == 1.0) ? "Hour" : "Hours";
                 }
             } catch (err) {
-                console.error("Failed to load stats", err);
+                // IF SERVER FAILS TO RESPOND (Tunnel down, Node down)
+                console.error("System Offline:", err);
+                
+                // Turn UI Red
+                badge.className = "system-status offline";
+                dot.className = "status-dot offline";
+                text.innerText = "SYSTEM OFFLINE";
+
+                // Lock down all inputs
+                inputZone.classList.add('offline-mode');
+                inputGroup.classList.add('disabled-group');
+                urlInput.disabled = true;
+                urlInput.placeholder = "> CONNECTION TO BACKEND SEVERED <";
+                pasteBtn.disabled = true;
+                extractBtn.disabled = true;
+                extractBtn.innerText = "MAINFRAME OFFLINE";
             }
         }
         
@@ -286,8 +305,23 @@
             const pPercent = document.getElementById('progressPercent');
             const pFill = document.getElementById('progressFill');
             
+            // --- VALIDATION CHECK ---
             if (!urlInput) { alert("Please enter a URL first."); return; }
+            if (!isValidUrl(urlInput)) {
+                pWrapper.style.display = "block";
+                setTimeout(() => pWrapper.style.opacity = "1", 10);
+                pLabel.style.color = "var(--neon-error)";
+                pLabel.innerText = "> ERROR: INVALID LINK FORMAT <";
+                pPercent.innerText = "FAIL";
+                pFill.style.width = "100%";
+                pFill.style.background = "var(--neon-error)";
+                pFill.style.boxShadow = "0 0 15px var(--neon-error)";
+                
+                setTimeout(() => { pWrapper.style.opacity = "0"; setTimeout(() => { pWrapper.style.display = "none"; pFill.style.width = "0%"; }, 300); }, 3000);
+                return;
+            }
             
+            // --- UI LOCK & START FETCH ---
             btn.disabled = true;
             btn.innerText = "Processing...";
             pWrapper.style.display = "block";
@@ -305,7 +339,8 @@
             }, 500);
             
             try {
-                const response = await fetch('http://localhost:3000/api/extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: urlInput }) });
+                // Update: Target the API Subdomain via Cloudflare Tunnel
+                const response = await fetch('https://api.vid.neopix.in/api/extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: urlInput }) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.error || "Extraction failed.");
                 
@@ -330,10 +365,10 @@
                 setTimeout(() => { pWrapper.style.opacity = "0"; setTimeout(() => { pWrapper.style.display = "none"; pFill.style.width = "0%"; }, 300); document.getElementById('videoUrl').value = ''; }, 5000);
             } catch (error) {
                 clearInterval(progressInterval);
-                pLabel.style.color = "#ef4444"; 
+                pLabel.style.color = "var(--neon-error)"; 
                 pLabel.innerText = `> ERROR: ${error.message.toUpperCase()}`;
-                pFill.style.background = "#ef4444";
-                pFill.style.boxShadow = "0 0 15px #ef4444";
+                pFill.style.background = "var(--neon-error)";
+                pFill.style.boxShadow = "0 0 15px var(--neon-error)";
             } finally { 
                 btn.disabled = false; 
                 btn.innerText = "Extract Media"; 
