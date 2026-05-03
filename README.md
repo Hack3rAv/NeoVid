@@ -37,5 +37,5 @@ To run NeoVid, your machine (or VPS) must have the following installed:
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/Hack3rAv/neovid.git](https://github.com/Hack3rAv/neovid.git)
+   git clone https://github.com/Hack3rAv/neovid.git
    cd neovid
