@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NeoVid | Universal Extractor</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            --bg-base: #020203;
+            --glass-bg: rgba(15, 15, 20, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --neon-primary: #00f3ff;
+            --neon-secondary: #8b5cf6; 
+            --text-main: #ffffff;
+            --text-muted: #8892b0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-base); color: var(--text-main); font-family: 'Space Grotesk', sans-serif;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh; position: relative;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(0, 243, 255, 0.08), transparent 25%);
+            padding: 50px 20px 180px 20px;
+        }
+
+        .app-container {
+            width: 100%; max-width: 700px; padding: 3rem; z-index: 10;
+            background: var(--glass-bg); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border); border-radius: 24px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- HEADER & BRANDING --- */
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem; }
+        .header-titles { display: flex; flex-direction: column; align-items: flex-start; }
+        h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: 6px; color: #fff; line-height: 1.1; }
+        
+        .powered-by {
+            font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; 
+            margin-top: 6px; letter-spacing: 1px;
+        }
+        .powered-by a {
+            color: var(--neon-secondary); text-decoration: none; font-weight: bold;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .powered-by a:hover {
+            color: var(--neon-primary); text-shadow: 0 0 10px var(--neon-primary);
+        }
+
+        .system-status { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--neon-primary); display: flex; align-items: center; gap: 8px; background: rgba(0, 243, 255, 0.1); padding: 6px 12px; border-radius: 50px; border: 1px solid rgba(0, 243, 255, 0.2); }
+        .status-dot { width: 6px; height: 6px; background-color: var(--neon-primary); border-radius: 50%; box-shadow: 0 0 8px var(--neon-primary); animation: blink 1.5s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+        /* --- INPUT ZONE --- */
+        .input-zone { position: relative; padding: 3rem 2rem; text-align: center; border-radius: 16px; overflow: hidden; transform: translateZ(0); }
+        .input-zone::before { content: ''; position: absolute; top: -100%; left: -100%; width: 300%; height: 300%; background: conic-gradient(from 90deg, transparent 0%, transparent 60%, var(--neon-secondary) 80%, var(--neon-primary) 100%); animation: spinBorder 3s linear infinite; z-index: 0; }
+        .input-zone::after { content: ''; position: absolute; inset: 2px; background: #09090b; border-radius: 14px; z-index: 1; }
+        .input-content { position: relative; z-index: 2; }
+        @keyframes spinBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- NEW INPUT GROUP FOR PASTE SVG BUTTON --- */
+        .input-group {
+            display: flex; align-items: center; background: #13131a; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; margin-bottom: 20px; transition: border 0.3s, box-shadow 0.3s;
+        }
+        .input-group:focus-within { border-color: var(--neon-primary); box-shadow: 0 0 15px rgba(0,243,255,0.2); }
+        
+        input[type="url"] {
+            flex-grow: 1; background: transparent; border: none; color: white; 
+            padding: 15px 15px 15px 25px; font-family: 'JetBrains Mono', monospace; 
+            font-size: 14px; text-align: center; outline: none; 
+        }
+
+        #pasteBtn {
+            background: transparent; color: var(--text-muted); border: none;
+            padding: 0 20px 0 10px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: none; width: auto; display: flex; align-items: center; justify-content: center;
+        }
+        #pasteBtn:hover {
+            color: var(--neon-primary); transform: scale(1.1); background: transparent; box-shadow: none;
+        }
+        #pasteBtn svg { filter: drop-shadow(0 0 0 transparent); transition: filter 0.3s; }
+        #pasteBtn:hover svg { filter: drop-shadow(0 0 8px var(--neon-primary)); }
+
+        /* Extract Button */
+        #extractBtn { width: 100%; background-color: var(--neon-primary); color: #000; border: none; padding: 12px 30px; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 16px; letter-spacing: 2px; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: all 0.3s ease; }
+        #extractBtn:hover { background-color: #fff; box-shadow: 0 0 20px var(--neon-primary); transform: translateY(-2px); }
+        #extractBtn:disabled { background-color: #333; color: #666; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        /* --- PROGRESS BAR UI --- */
+        .progress-wrapper { margin-top: 2rem; display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .progress-text { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--neon-primary); margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .progress-bg { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .progress-fill { height: 100%; width: 0%; background: var(--neon-primary); box-shadow: 0 0 15px var(--neon-primary); transition: width 0.3s linear; }
+
+        /* --- INFO SECTIONS --- */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 2rem; text-align: left; }
+        .info-card { background: rgba(0, 0, 0, 0.4); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .info-card h3 { color: var(--neon-secondary); font-size: 1rem; margin-bottom: 10px; letter-spacing: 1px; }
+        .info-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+
+        /* --- NEOVID CYBER-FADE STICKY FOOTER --- */
+        .sticky-counter {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(8, 8, 10, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(0, 243, 255, 0.3);
+            box-shadow: 0 -30px 60px rgba(0, 0, 0, 1), 0 -10px 40px rgba(0, 243, 255, 0.1);
+            padding: 25px; text-align: center; z-index: 100;
+        }
+
+        .sticky-counter::before {
+            content: ""; position: absolute; bottom: 100%; left: 0; width: 100%; height: 80px;
+            background: linear-gradient(to top, rgba(10, 10, 15, 1) 0%, rgba(10, 10, 15, 0.3) 60%, rgba(10, 10, 15, 0) 100%);
+            pointer-events: none;
+        }
+
+        .counter-text { font-family: 'Space Grotesk', sans-serif; font-size: 1rem; color: var(--text-main); font-weight: 500; letter-spacing: 1px; }
+        .counter-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; margin-right: 8px;}
+        .counter-number { color: var(--neon-primary); font-size: 1.6rem; font-weight: 900; text-shadow: 0 0 15px var(--neon-primary); font-family: 'JetBrains Mono', monospace; }
+        .counter-unit { color: var(--neon-primary); font-size: 0.9rem; font-weight: 900; margin-right: 8px; margin-left: 2px; }
+        .counter-suffix { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* --- MOBILE MEDIA QUERIES --- */
+        @media (max-width: 768px) {
+            body { padding-top: 20px; padding-bottom: 160px; }
+            .app-container { padding: 1.5rem; border-radius: 16px; }
+            
+            .header { margin-bottom: 1.5rem; flex-direction: column; gap: 15px; text-align: center; }
+            .header-titles { align-items: center; }
+            h1 { font-size: 1.3rem; letter-spacing: 4px; }
+            .system-status { font-size: 0.65rem; padding: 4px 10px; }
+
+            .input-zone { padding: 2rem 1rem; }
+            input[type="url"] { font-size: 13px; padding: 12px 10px 12px 15px; }
+            #extractBtn { font-size: 14px; padding: 10px 20px; }
+
+            .info-grid { grid-template-columns: 1fr; gap: 15px; }
+            .info-card { padding: 15px; }
+            .info-card p { font-size: 0.8rem; }
+
+            .sticky-counter { padding: 20px 15px; }
+            .counter-number { font-size: 1.3rem; }
+            .counter-label, .counter-unit, .counter-suffix { font-size: 0.75rem; }
+            .sticky-counter::before { height: 60px; }
+        }
+        @media (max-width: 480px) {
+            .app-container { padding: 1rem; }
+            h1 { font-size: 1.1rem; letter-spacing: 2px; }
+            #extractBtn { width: 100%; letter-spacing: 1px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="header">
+            <div class="header-titles">
+                <h1>NEOVID</h1>
+                <div class="powered-by">Powered by <a href="https://neopix.in" target="_blank">Neopix</a></div>
+            </div>
+            <div class="system-status">
+                <div class="status-dot"></div>
+                SYSTEM ONLINE
+            </div>
+        </div>
+        
+        <div class="input-zone">
+            <div class="input-content">
+                <!-- NEW INPUT GROUP WITH SVG PASTE BUTTON -->
+                <div class="input-group">
+                    <input type="url" id="videoUrl" placeholder="> TARGET URL <" required>
+                    <button type="button" id="pasteBtn" onclick="pasteFromClipboard()" title="Paste Link">
+                        <!-- Clipboard SVG -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                        </svg>
+                    </button>
+                </div>
+                <button id="extractBtn" onclick="processVideo(event)">Extract Media</button>
+            </div>
+        </div>
+
+        <div class="progress-wrapper" id="progressWrapper">
+            <div class="progress-text">
+                <span id="progressLabel">> FETCHING METADATA...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bg">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>> PROTOCOL_INFO</h3>
+                <p>NeoVid bypasses standard web protocols by compiling raw streams on the backend server before routing the final payload directly to your local device.</p>
+            </div>
+            <div class="info-card">
+                <h3>> DISCLAIMER_</h3>
+                <p>This tool is designed for educational media extraction. Users are strictly responsible for adhering to the targeted platform's copyright policies.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEOVID CYBER-FADE STICKY FOOTER -->
+    <div class="sticky-counter">
+        <div class="counter-text">
+            <span class="counter-label">Total</span>
+            <span class="counter-number" id="globalCounterValue">0</span>
+            <span class="counter-unit" id="globalCounterUnit">Minutes</span>
+            <span class="counter-suffix">of video fetched</span>
+        </div>
+    </div>
+
+    <script>
+        // --- SVG HTML STRINGS FOR TRANSITIONS ---
+        const clipboardSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>`;
+        const checkSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+
+        // --- NEW SVG PASTE FUNCTION ---
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                    document.getElementById('videoUrl').value = text;
+                    
+                    // Visual feedback effect on the SVG button
+                    const btn = document.getElementById('pasteBtn');
+                    btn.innerHTML = checkSVG;
+                    btn.style.color = "var(--neon-primary)";
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = clipboardSVG;
+                        btn.style.color = "var(--text-muted)";
+                    }, 1000);
+                }
+            } catch (err) {
+                console.error('Failed to read clipboard contents: ', err);
+                alert("Browser blocked clipboard access. Please paste manually (Ctrl+V).");
+            }
+        }
+
+        // Fetch the database counter on page load
+        async function loadStats() {
+            try {
+                const res = await fetch('http://localhost:3000/api/stats');
+                const data = await res.json();
+                
+                const totalMinutes = data.totalMinutes || 0;
+                const valueEl = document.getElementById('globalCounterValue');
+                const unitEl = document.getElementById('globalCounterUnit');
+
+                if (totalMinutes < 1) {
+                    valueEl.innerText = "0";
+                    unitEl.innerText = "Minutes";
+                } else if (totalMinutes === 1) {
+                    valueEl.innerText = "1";
+                    unitEl.innerText = "Minute";
+                } else if (totalMinutes < 60) {
+                    valueEl.innerText = totalMinutes;
+                    unitEl.innerText = "Minutes";
+                } else {
+                    const totalHours = (totalMinutes / 60).toFixed(1);
+                    valueEl.innerText = totalHours;
+                    unitEl.innerText = (totalHours == 1.0) ? "Hour" : "Hours";
+                }
+            } catch (err) {
+                console.error("Failed to load stats", err);
+            }
+        }
+        
+        window.onload = loadStats;
+
+        async function processVideo(event) {
+            if (event) event.preventDefault(); 
+            const urlInput = document.getElementById('videoUrl').value.trim();
+            const btn = document.getElementById('extractBtn');
+            const pWrapper = document.getElementById('progressWrapper');
+            const pLabel = document.getElementById('progressLabel');
+            const pPercent = document.getElementById('progressPercent');
+            const pFill = document.getElementById('progressFill');
+            
+            if (!urlInput) { alert("Please enter a URL first."); return; }
+            
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+            pWrapper.style.display = "block";
+            setTimeout(() => pWrapper.style.opacity = "1", 10);
+            pLabel.style.color = "var(--neon-primary)";
+            pFill.style.background = "var(--neon-primary)";
+            pFill.style.boxShadow = "0 0 15px var(--neon-primary)";
+            
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                if (progress < 20) { pLabel.innerText = "> FETCHING METADATA..."; progress += 2; }
+                else if (progress < 85) { pLabel.innerText = "> EXTRACTING & MERGING MEDIA..."; progress += 0.5; }
+                pPercent.innerText = Math.floor(progress) + "%";
+                pFill.style.width = progress + "%";
+            }, 500);
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: urlInput }) });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Extraction failed.");
+                
+                clearInterval(progressInterval);
+                pFill.style.width = "100%";
+                pPercent.innerText = "100%";
+                pLabel.style.color = "#10b981"; 
+                pLabel.innerText = "> TRANSFERRING TO DEVICE...";
+                pFill.style.background = "#10b981";
+                pFill.style.boxShadow = "0 0 15px #10b981";
+                
+                loadStats();
+                
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = data.downloadUrl;
+                a.setAttribute('download', ''); 
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => document.body.removeChild(a), 100);
+                
+                setTimeout(() => { pWrapper.style.opacity = "0"; setTimeout(() => { pWrapper.style.display = "none"; pFill.style.width = "0%"; }, 300); document.getElementById('videoUrl').value = ''; }, 5000);
+            } catch (error) {
+                clearInterval(progressInterval);
+                pLabel.style.color = "#ef4444"; 
+                pLabel.innerText = `> ERROR: ${error.message.toUpperCase()}`;
+                pFill.style.background = "#ef4444";
+                pFill.style.boxShadow = "0 0 15px #ef4444";
+            } finally { 
+                btn.disabled = false; 
+                btn.innerText = "Extract Media"; 
+            }
+        }
+    </script>
+</body>
+</html>
